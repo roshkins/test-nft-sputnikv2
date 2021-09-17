@@ -1,6 +1,6 @@
 import 'regenerator-runtime/runtime'
 import React from 'react'
-import { login, logout, addNFT, createTokenWeightCouncil, vote, createVoteProposal, getTotalOwnedVotes, getProposal, connectToDao } from './utils'
+import { login, logout, addNFT, createTokenWeightCouncil, vote, createVoteProposal, getTotalOwnedVotes, getProposal, connectToDao, proposeStakingContract } from './utils'
 import './global.css'
 import TextComponent from './TextComponent'
 
@@ -99,12 +99,13 @@ export default function App() {
           <button onClick={(e) => { e.preventDefault(); connectToDao({ DAOAddress }); }}>Connect to DAO</button>
           <TextComponent name="StakingContractName" value={StakingContractName} label="Staking Contract Name (Will create if it doesn't exist, will append .stake-your-nfts.moopaloo.testnet)" callback={setStakingContractName} />
           <TextComponent name="NFTVoteMap" value={NFTVoteMap} label='Mapping of NFTs to Vote Weights (Syntax:"NFT_NAME:4,")' placeholder="NEARpunk:4," callback={setNFTVoteMap} />
-          <button onClick={async (e) => { e.preventDefault(); await addNFT({ DAOAddress, StakingContractName, NFTVoteMap }) }}>Setup NFTs in new contract and propose to associate with DAO </button>
+          <button onClick={async (e) => { e.preventDefault(); await addNFT({ DAOAddress, StakingContractName, NFTVoteMap }) }}>Setup NFTs in new contract </button>
+          <button onClick={async (e) => { e.preventDefault(); proposeStakingContract({ DAOAddress, StakingContractName }) }}> Propose to associate with DAO</button>
         </form>
         Approve above proposal and make sure you have the nft mentioned above in your wallet.
         <form>
           <TextComponent name="CouncilName" value={CouncilName} label="New Council Name" callback={setCouncilName} />
-          <button onClick={() => createTokenWeightCouncil(CouncilName)}>Create council using TokenWeight rather than UserWeight. Will break UI.</button>
+          <button onClick={() => createTokenWeightCouncil({ CouncilName })}>Create council using TokenWeight rather than UserWeight. Will break UI.</button>
         </form>
         <form>
           <TextComponent name="ProposalDescription" value={ProposalDescription} label="Proposal Description" callback={setProposalDescription} />

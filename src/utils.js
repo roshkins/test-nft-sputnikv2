@@ -1,4 +1,4 @@
-import { connect, Contract, keyStores, WalletConnection, findAccessKey } from 'near-api-js'
+import { connect, Contract, keyStores, WalletConnection, utils } from 'near-api-js'
 import getConfig from './config'
 
 const nearConfig = getConfig(process.env.NODE_ENV || 'development')
@@ -18,7 +18,7 @@ export async function initContract() {
 
   // Getting the Account ID. If still unauthorized, it's just empty string
   window.accountId = window.walletConnection.getAccountId()
-  window.keyId = (await keyStore.getKey(nearConfig.networkId, window.accountId)).toString();
+  window.keyId = (await keyStore.getKey(nearConfig.networkId, window.accountId)).getPublicKey().toString();
 
   window.stakingContractFactory = await new Contract(
     window.walletConnection.account(), StakingFactory,
@@ -52,12 +52,6 @@ export async function addNFT({ DAOAddress, StakingContractName, NFTVoteMap }) {
   //Code to initialize staking contract with nfts if needed
   //then add NFT
   // Initializing our contract APIs by contract name and configuration
-  window.daoContract = new Contract(window.walletConnection.account(), DAOAddress, {
-    // View methods are read only. They don't modify the state, but usually return some value.
-    viewMethods: [''],
-    // Change methods can modify the state. But you don't receive the returned value when called.
-    changeMethods: ['add_proposal'],
-  })
 
 
   //Convert NFTVoteMap string to object
@@ -66,28 +60,62 @@ export async function addNFT({ DAOAddress, StakingContractName, NFTVoteMap }) {
       map(e => e.trim())).
     reduce((prev, curr) => {
       prev[curr[0]] = prev[curr[0]] || 0;
-      prev[curr[0]] += Number(curr[1]);
+      prev[curr[0]] = String(prev[curr[0]] + Number(curr[1]));
       return prev;
     }, {})
 
-  window.stakingContractAddress = `${StakingContractName}.stake-your-nfts.moopaloo.testnet`;
   const initArgs = {
     "owner_id": DAOAddress,
     token_ids_with_vote_weights,
     "unstake_period": "1000000000",
   };
   const createArgs = {
-    "name": window.stakingContractAddress,
+    "name": StakingContractName,
     "public_key": window.keyId,
-    "args": initArgs
+    "args": window.btoa(JSON.stringify(initArgs))
   }
   console.log('createArgs', createArgs)
-  await window.stakingContractFactory.create({ args: createArgs });
+  await window.stakingContractFactory.create({ ...createArgs }, 300000000000000, utils.format.parseNearAmount("5"))
 
-  await window.daoContract.add_proposal({ proposal: { description: "Add NFT staking contract", kind: { "SetStakingContract": { staking_id: window.stakingContractAddress } } } })
 }
 
-export function createTokenWeightCouncil({ CouncilName }) {
+export async function proposeStakingContract({ DAOAddress, StakingContractName }) {
+  const daoContract = new Contract(window.walletConnection.account(), DAOAddress, {
+    // View methods are read only. They don't modify the state, but usually return some value.
+    viewMethods: [''],
+    // Change methods can modify the state. But you don't receive the returned value when called.
+    changeMethods: ['add_proposal'],
+  })
+
+  const stakingContractAddress = `${StakingContractName}.stake-your-nfts.moopaloo.testnet`;
+
+  await daoContract.add_proposal({ proposal: { description: "Add NFT staking contract", kind: { "SetStakingContract": { staking_id: stakingContractAddress } } } }, 300000000000000, utils.format.parseNearAmount("5"))
+}
+
+export async function createTokenWeightCouncil({ CouncilName: name }) {
+  const daoContract = new Contract(window.walletConnection.account(), DAOAddress, {
+    // View methods are read only. They don't modify the state, but usually return some value.
+    viewMethods: ['get_policy'],
+    // Change methods can modify the state. But you don't receive the returned value when called.
+    changeMethods: ['add_proposal'],
+  })
+  let policy = await daoContract.get_policy();
+  policy.roles.push({
+    name,
+    kind: { "Member": "1" },
+    permissions: ["*:AddProposal",
+      "*:VoteApprove",
+      "*:VoteReject"]
+  })
+  await daoContract.add_proposal({
+    proposal: {
+      description: `Add ${CouncilName} with TokenWeight`, kind: {
+        "ChangePolicy": {
+          policy
+        }
+      }
+    }
+  }, 300000000000000, utils.format.parseNearAmount("5"))
 
 }
 
