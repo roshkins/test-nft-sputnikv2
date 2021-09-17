@@ -1,0 +1,2 @@
+cargo:rustc-env=TYPENUM_BUILD_CONSTS=/home/rashi/test-nft-sputnikv2/contract/target/wasm32-unknown-unknown/debug/build/typenum-1b76aee3629e85f8/out/consts.rs
+cargo:rustc-env=TYPENUM_BUILD_OP=/home/rashi/test-nft-sputnikv2/contract/target/wasm32-unknown-unknown/debug/build/typenum-1b76aee3629e85f8/out/op.rs
