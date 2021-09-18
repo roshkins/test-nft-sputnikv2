@@ -174,5 +174,5 @@ export async function nftTransferCall({ StakingContractName, TokenAddress, Token
     "msg": ""
   };
 
-  await nftContract.nft_transfer_call(args, 300000000000000, utils.format.parseNearAmount("1"))
+  await nftContract.nft_transfer_call(args, 300000000000000, 1)
 }

@@ -26,19 +26,18 @@ export default function App() {
   // after submitting the form, we want to show Notification
   const [showNotification, setShowNotification] = React.useState(false)
 
-  const [DAOAddress, setDAOAddress] = React.useState();
-  const [StakingContractName, setStakingContractName] = React.useState();
-  const [NFTVoteMap, setNFTVoteMap] = React.useState();
-  const [ProposalDescription, setProposalDescription] = React.useState();
+  const [DAOAddress, setDAOAddress] = useStickyState("", "DAOAddress");
+  const [StakingContractName, setStakingContractName] = useStickyState("", "StakingContractName");
+  const [NFTVoteMap, setNFTVoteMap] = useStickyState("", "NFTVoteMap");
+  const [ProposalDescription, setProposalDescription] = useStickyState("", "ProposalDescription");
 
-  const [ProposalStatus, setProposalStatus] = React.useState();
+  const [ProposalStatus, setProposalStatus] = useStickyState("", "ProposalStatus");
 
-  const [CouncilName, setCouncilName] = React.useState();
-  const [VoteCount, setVoteCount] = React.useState();
-  const [TotalOwnedVotes, setTotalOwnedVotes] = React.useState(0);
-  const [ProposalNumber, setProposalNumber] = React.useState();
-  const [TokenAddress, setTokenAddress] = React.useState();
-  const [TokenId, setTokenId] = React.useState();
+  const [CouncilName, setCouncilName] = useStickyState("", "CouncilName");
+
+  const [ProposalNumber, setProposalNumber] = useStickyState("", "ProposalNumber");
+  const [TokenAddress, setTokenAddress] = useStickyState("", "TokenAddress");
+  const [TokenId, setTokenId] = useStickyState("", "TokenId");
 
   const getAndSetProposal = async (prop) => {
     setProposalNumber(prop)
