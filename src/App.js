@@ -39,6 +39,8 @@ export default function App() {
   const [TokenAddress, setTokenAddress] = useStickyState("", "TokenAddress");
   const [TokenId, setTokenId] = useStickyState("", "TokenId");
 
+  const [ApprovalId, setApprovalId] = useStickyState("", "ApprovalId");
+
   const getAndSetProposal = async (prop) => {
     setProposalNumber(prop)
     setProposalStatus(JSON.stringify(await getProposal({ ProposalNumber: prop, DAOAddress })))
@@ -119,7 +121,8 @@ export default function App() {
         Approve above proposal and make sure you have the nft mentioned above in your wallet.
         <TextComponent name="TokenAddress" value={TokenAddress} label="Token Contract Address" callback={setTokenAddress} />
         <TextComponent name="TokenId" value={TokenId} label="Token Id" callback={setTokenId} />
-        <button onClick={async (e) => { e.preventDefault(); await nftTransferCall({ StakingContractName, TokenAddress, TokenId }) }}> Transfer NFT and call Staking Contract </button>
+        <TextComponent name="ApprovalId" value={ApprovalId} label="Approval Id" callback={setApprovalId} />
+        <button onClick={async (e) => { e.preventDefault(); await nftTransferCall({ StakingContractName, TokenAddress, TokenId, ApprovalId }) }}> Transfer NFT and call Staking Contract </button>
         <form>
           <TextComponent name="CouncilName" value={CouncilName} label="New Council Name" callback={setCouncilName} />
           <button onClick={async (e) => { e.preventDefault(); await createTokenWeightCouncil({ DAOAddress, CouncilName }) }}>Create council using TokenWeight rather than UserWeight.</button>

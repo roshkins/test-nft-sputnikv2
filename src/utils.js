@@ -80,6 +80,7 @@ export async function addNFT({ DAOAddress, StakingContractName, NFTVoteMap }) {
 
 }
 
+const STAKING_FACTORY = "stake-your-nfts.moopaloo.testnet"
 export async function proposeStakingContract({ DAOAddress, StakingContractName }) {
   const daoContract = new Contract(window.walletConnection.account(), DAOAddress, {
     // View methods are read only. They don't modify the state, but usually return some value.
@@ -88,7 +89,7 @@ export async function proposeStakingContract({ DAOAddress, StakingContractName }
     changeMethods: ['add_proposal'],
   })
 
-  const stakingContractAddress = `${StakingContractName}.stake-your-nfts.moopaloo.testnet`;
+  const stakingContractAddress = `${StakingContractName}.${STAKING_FACTORY}`;
 
   await daoContract.add_proposal({ proposal: { description: `Add NFT staking contract ${stakingContractAddress}`, kind: { "SetStakingContract": { staking_id: stakingContractAddress } } } }, 300000000000000, utils.format.parseNearAmount("5"))
 }
@@ -161,15 +162,17 @@ export async function getProposal({ ProposalNumber, DAOAddress }) {
   return await daoContract.get_proposals({ from_index: parseInt(ProposalNumber), limit: 1 })
 }
 
-export async function nftTransferCall({ StakingContractName, TokenAddress, TokenId }) {
+export async function nftTransferCall({ StakingContractName, TokenAddress, TokenId, ApprovalId }) {
   const nftContract = new Contract(window.walletConnection.account(), TokenAddress, {
     changeMethods: ['nft_transfer_call']
   })
 
+  const stakingContractAddress = `${StakingContractName}.${STAKING_FACTORY}`;
+
   const args = {
-    "receiver_id": "stake-test.moopaloo.testnet",
+    "receiver_id": stakingContractAddress,
     "token_id": TokenId,
-    "approval_id": "0",
+    "approval_id": "" + ApprovalId,
     "memo": "",
     "msg": ""
   };
