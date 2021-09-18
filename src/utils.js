@@ -18,6 +18,7 @@ export async function initContract() {
 
   // Getting the Account ID. If still unauthorized, it's just empty string
   window.accountId = window.walletConnection.getAccountId()
+  if (window.accountId)
   window.keyId = (await keyStore.getKey(nearConfig.networkId, window.accountId)).getPublicKey().toString();
 
   window.stakingContractFactory = await new Contract(
@@ -89,10 +90,10 @@ export async function proposeStakingContract({ DAOAddress, StakingContractName }
 
   const stakingContractAddress = `${StakingContractName}.stake-your-nfts.moopaloo.testnet`;
 
-  await daoContract.add_proposal({ proposal: { description: "Add NFT staking contract", kind: { "SetStakingContract": { staking_id: stakingContractAddress } } } }, 300000000000000, utils.format.parseNearAmount("5"))
+  await daoContract.add_proposal({ proposal: { description: `Add NFT staking contract ${stakingContractAddress}`, kind: { "SetStakingContract": { staking_id: stakingContractAddress } } } }, 300000000000000, utils.format.parseNearAmount("5"))
 }
 
-export async function createTokenWeightCouncil({ CouncilName: name }) {
+export async function createTokenWeightCouncil({ DAOAddress, CouncilName }) {
   const daoContract = new Contract(window.walletConnection.account(), DAOAddress, {
     // View methods are read only. They don't modify the state, but usually return some value.
     viewMethods: ['get_policy'],
@@ -101,12 +102,20 @@ export async function createTokenWeightCouncil({ CouncilName: name }) {
   })
   let policy = await daoContract.get_policy();
   policy.roles.push({
-    name,
+    "name": CouncilName,
     kind: { "Member": "1" },
     permissions: ["*:AddProposal",
       "*:VoteApprove",
-      "*:VoteReject"]
+      "*:VoteReject"],
+    vote_policy: {
+      "*": {
+        weight_kind: "TokenWeight",
+        quorum: "0",
+        threshold: "1"
+      }
+    }
   })
+  console.log("policy", policy);
   await daoContract.add_proposal({
     proposal: {
       description: `Add ${CouncilName} with TokenWeight`, kind: {
@@ -119,18 +128,35 @@ export async function createTokenWeightCouncil({ CouncilName: name }) {
 
 }
 
-export function createVoteProposal({ ProposalDescription }, callback) {
-  callback(-1); // TODO: Callback ProposalNumber
+export async function createVoteProposal({ DAOAddress, ProposalDescription }) {
+  const daoContract = new Contract(window.walletConnection.account(), DAOAddress, {
+    // View methods are read only. They don't modify the state, but usually return some value.
+    viewMethods: [''],
+    // Change methods can modify the state. But you don't receive the returned value when called.
+    changeMethods: ['add_proposal'],
+  })
+
+  const proposal = { "description": ProposalDescription, "kind": "Vote" };
+  console.log("proposal", proposal);
+  await daoContract.add_proposal({ proposal }, 300000000000000, utils.format.parseNearAmount("5"));
 }
 
-export function vote({ VoteCount, ProposalNumber }) {
-
+export async function vote({ VoteCount, ProposalNumber, DAOAddress }) {
+  const daoContract = new Contract(window.walletConnection.account(), DAOAddress, {
+    // View methods are read only. They don't modify the state, but usually return some value.
+    viewMethods: [''],
+    // Change methods can modify the state. But you don't receive the returned value when called.
+    changeMethods: ['act_proposal'],
+  })
+  return await daoContract.act_proposal({ id: parseInt(ProposalNumber), action: VoteCount > 0 ? "VoteApprove" : "VoteReject", memo: "" })
 }
 
-export function getTotalOwnedVotes({ StakingContractName }) {
-  return -1; // TODO: implement this
-}
-
-export function getProposal({ ProposalNumber, StakingContractName }) {
-
+export async function getProposal({ ProposalNumber, DAOAddress }) {
+  const daoContract = new Contract(window.walletConnection.account(), DAOAddress, {
+    // View methods are read only. They don't modify the state, but usually return some value.
+    viewMethods: ['get_proposals'],
+    // Change methods can modify the state. But you don't receive the returned value when called.
+    changeMethods: [''],
+  })
+  return await daoContract.get_proposals({ from_index: parseInt(ProposalNumber), limit: 1 })
 }

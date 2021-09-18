@@ -1,6 +1,6 @@
 import 'regenerator-runtime/runtime'
 import React from 'react'
-import { login, logout, addNFT, createTokenWeightCouncil, vote, createVoteProposal, getTotalOwnedVotes, getProposal, connectToDao, proposeStakingContract } from './utils'
+import { login, logout, addNFT, createTokenWeightCouncil, vote, createVoteProposal, getProposal, connectToDao, proposeStakingContract } from './utils'
 import './global.css'
 import TextComponent from './TextComponent'
 
@@ -9,6 +9,19 @@ const { networkId } = getConfig(process.env.NODE_ENV || 'development')
 
 
 export default function App() {
+
+  function useStickyState(defaultValue, key) {
+    const [value, setValue] = React.useState(() => {
+      const stickyValue = window.localStorage.getItem(key);
+      return stickyValue !== null
+        ? JSON.parse(stickyValue)
+        : defaultValue;
+    });
+    React.useEffect(() => {
+      window.localStorage.setItem(key, JSON.stringify(value));
+    }, [key, value]);
+    return [value, setValue];
+  }
 
   // after submitting the form, we want to show Notification
   const [showNotification, setShowNotification] = React.useState(false)
@@ -25,11 +38,10 @@ export default function App() {
   const [TotalOwnedVotes, setTotalOwnedVotes] = React.useState(0);
   const [ProposalNumber, setProposalNumber] = React.useState();
 
-  React.useEffect(() => {
-    setTotalOwnedVotes(getTotalOwnedVotes({ StakingContractName }));
-    setProposalStatus(getProposal({ ProposalNumber, StakingContractName }));
-  }, [ProposalNumber]);
-
+  const getAndSetProposal = async (prop) => {
+    setProposalNumber(prop)
+    setProposalStatus(JSON.stringify(await getProposal({ ProposalNumber: prop, DAOAddress })))
+  }
   // The useEffect hook can be used to fire side-effects during render
   // Learn more: https://reactjs.org/docs/hooks-intro.html
   React.useEffect(
@@ -93,7 +105,8 @@ export default function App() {
           Stake your NFT here,{' '} {window.accountId}!
         </h1>
 
-        Create and setup your DAO here: <a target="_blank" href="https://testnet-v2.sputnik.fund/">testnet-v2.sputnik.fund</a>
+        Create and setup your DAO here when sputnikv2 is updated to support tokenweights: <a target="_blank" href="https://testnet-v2.sputnik.fund/">testnet-v2.sputnik.fund</a><br />
+        Otherwise use sputnikr2v2.moopaloo.testnet with a locally deployed instance of <a target="_blank" href="https://github.com/roshkins/Old-Sputnikv2-UI"> https://github.com/roshkins/Old-Sputnikv2-UI </a>
         <form>
           <TextComponent name="DAOAddress" value={DAOAddress} label="DAO Address" callback={setDAOAddress} />
           <button onClick={(e) => { e.preventDefault(); connectToDao({ DAOAddress }); }}>Connect to DAO</button>
@@ -105,18 +118,17 @@ export default function App() {
         Approve above proposal and make sure you have the nft mentioned above in your wallet.
         <form>
           <TextComponent name="CouncilName" value={CouncilName} label="New Council Name" callback={setCouncilName} />
-          <button onClick={() => createTokenWeightCouncil({ CouncilName })}>Create council using TokenWeight rather than UserWeight. Will break UI.</button>
+          <button onClick={async (e) => { e.preventDefault(); await createTokenWeightCouncil({ DAOAddress, CouncilName }) }}>Create council using TokenWeight rather than UserWeight.</button>
         </form>
         <form>
           <TextComponent name="ProposalDescription" value={ProposalDescription} label="Proposal Description" callback={setProposalDescription} />
-          <button onClick={() => createVoteProposal({ ProposalDescription }, (ProposalNumber) => setProposalNumber(ProposalNumber))}>Create Vote Proposal</button>
+          <button onClick={async (e) => { e.preventDefault(); await createVoteProposal({ DAOAddress, ProposalDescription }) }}>Create Vote Proposal</button>
         </form>
         <form>
-          Proposal status: {ProposalStatus}
-          <TextComponent name="VoteCount" value={VoteCount} label={`Of ${TotalOwnedVotes}, how many would you like to use here?`} callback={setVoteCount} />
-
-          <button onClick={() => vote({ VoteCount, ProposalNumber })}>Vote YES using votes from staked NFT</button>
-          <button onClick={() => vote({ VoteCount: -1 * VoteCount, ProposalNumber })}>Vote NO using votes from staked NFT</button>
+          <TextComponent name="ProposalNumber" label="Proposal Number to vote on" value={ProposalNumber} callback={getAndSetProposal} />
+          Proposal: {ProposalStatus}
+          <button onClick={(e) => { e.preventDefault(); vote({ DAOAddress, VoteCount: +1, ProposalNumber }) }}>Vote YES using votes from staked NFT</button>
+          <button onClick={(e) => { e.preventDefault(); vote({ DAOAddress, VoteCount: -1, ProposalNumber }) }}>Vote NO using votes from staked NFT</button>
         </form>
       </main>
       {showNotification && <Notification />}
