@@ -179,3 +179,31 @@ export async function nftTransferCall({ StakingContractName, TokenAddress, Token
 
   await nftContract.nft_transfer_call(args, 300000000000000, 1)
 }
+
+export async function registerSender({ StakingContractName }) {
+  const stakingContractAddress = `${StakingContractName}.${STAKING_FACTORY}`;
+
+  const nftContract = new Contract(window.walletConnection.account(), stakingContractAddress, {
+    changeMethods: ['storage_deposit']
+  })
+
+
+  const args = {
+    "account_id": window.walletConnection.getAccountId(),
+    "registration_only": true
+  };
+
+  await nftContract.storage_deposit(args, 300000000000000, utils.format.parseNearAmount("5"))
+}
+
+export async function approveNft({ TokenAddress, TokenId, StakingContractName }) {
+  const nftContract = new Contract(window.walletConnection.account(), TokenAddress, {
+    changeMethods: ['nft_approve']
+  })
+
+  const stakingContractAddress = `${StakingContractName}.${STAKING_FACTORY}`;
+
+  const args = { "token_id": TokenId, "account_id": stakingContractAddress };
+  await nftContract.nft_approve(args, 300000000000000, 1)
+
+}

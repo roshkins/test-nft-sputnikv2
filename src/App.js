@@ -1,6 +1,6 @@
 import 'regenerator-runtime/runtime'
 import React from 'react'
-import { login, logout, addNFT, createTokenWeightCouncil, vote, createVoteProposal, getProposal, connectToDao, proposeStakingContract, nftTransferCall } from './utils'
+import { approveNft, login, logout, addNFT, createTokenWeightCouncil, vote, createVoteProposal, getProposal, connectToDao, proposeStakingContract, nftTransferCall, registerSender } from './utils'
 import './global.css'
 import TextComponent from './TextComponent'
 
@@ -117,10 +117,13 @@ export default function App() {
           <TextComponent name="NFTVoteMap" value={NFTVoteMap} label='Mapping of NFTs to Vote Weights (Syntax:"NFT_NAME:4,")' placeholder="NEARpunk:4," callback={setNFTVoteMap} />
           <button onClick={async (e) => { e.preventDefault(); await addNFT({ DAOAddress, StakingContractName, NFTVoteMap }) }}>Setup NFTs in new contract </button>
           <button onClick={async (e) => { e.preventDefault(); proposeStakingContract({ DAOAddress, StakingContractName }) }}> Propose to associate with DAO</button>
+          <button onClick={async (e) => { e.preventDefault(); await registerSender({ StakingContractName }) }}>Register sender address with staking contract</button>
+
         </form>
         Approve above proposal and make sure you have the nft mentioned above in your wallet.
         <TextComponent name="TokenAddress" value={TokenAddress} label="Token Contract Address" callback={setTokenAddress} />
         <TextComponent name="TokenId" value={TokenId} label="Token Id" callback={setTokenId} />
+        <button onClick={async (e) => { e.preventDefault(); await approveNft({ TokenAddress, TokenId, StakingContractName }); }}> Approve NFT for transfer to staking contract </button>
         <TextComponent name="ApprovalId" value={ApprovalId} label="Approval Id" callback={setApprovalId} />
         <button onClick={async (e) => { e.preventDefault(); await nftTransferCall({ StakingContractName, TokenAddress, TokenId, ApprovalId }) }}> Transfer NFT and call Staking Contract </button>
         <form>
