@@ -19,7 +19,7 @@ export async function initContract() {
   // Getting the Account ID. If still unauthorized, it's just empty string
   window.accountId = window.walletConnection.getAccountId()
   if (window.accountId)
-  window.keyId = (await keyStore.getKey(nearConfig.networkId, window.accountId)).getPublicKey().toString();
+    window.keyId = (await keyStore.getKey(nearConfig.networkId, window.accountId)).getPublicKey().toString();
 
   window.stakingContractFactory = await new Contract(
     window.walletConnection.account(), StakingFactory,
@@ -159,4 +159,20 @@ export async function getProposal({ ProposalNumber, DAOAddress }) {
     changeMethods: [''],
   })
   return await daoContract.get_proposals({ from_index: parseInt(ProposalNumber), limit: 1 })
+}
+
+export async function nftTransferCall({ StakingContractName, TokenAddress, TokenId }) {
+  const nftContract = new Contract(window.walletConnection.account(), TokenAddress, {
+    changeMethods: ['nft_transfer_call']
+  })
+
+  const args = {
+    "receiver_id": "stake-test.moopaloo.testnet",
+    "token_id": TokenId,
+    "approval_id": "0",
+    "memo": "",
+    "msg": ""
+  };
+
+  await nftContract.nft_transfer_call(args, 300000000000000, utils.format.parseNearAmount("1"))
 }

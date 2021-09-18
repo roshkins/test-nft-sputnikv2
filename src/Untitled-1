@@ -1,0 +1,1 @@
+{ "name": "ui-test-1.stake-your-nfts.moopaloo.testnet", "public_key": "ed25519:9j9pLYey61Svfp5NpvwiJXbeS8svKUjdRHP1QRQHHBbu", "args": { "owner_id": "nft-staking-ui-1.sputnikv2.testnet", "token_ids_with_vote_weights": { "NEARpunk": 4 }, "unstake_period": "1000000000" } }

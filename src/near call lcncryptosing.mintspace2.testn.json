@@ -1,0 +1,1 @@
+near call lcncryptosing.mintspace2.testnet nft_tokens --args '{"from_index":"108"}'  --accountId morenear.testnet --depositYocto 1

@@ -1,0 +1,5 @@
+near call test-dao-nft.stake-your-nfts.moopaloo.testnet delegate --args '{
+    "account_id": "morenear.testnet",
+    "token_id": "0:stinkycat.mintspace2.testnet",
+    "amount": "1"
+}'

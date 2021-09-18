@@ -1,6 +1,6 @@
 import 'regenerator-runtime/runtime'
 import React from 'react'
-import { login, logout, addNFT, createTokenWeightCouncil, vote, createVoteProposal, getProposal, connectToDao, proposeStakingContract } from './utils'
+import { login, logout, addNFT, createTokenWeightCouncil, vote, createVoteProposal, getProposal, connectToDao, proposeStakingContract, nftTransferCall } from './utils'
 import './global.css'
 import TextComponent from './TextComponent'
 
@@ -37,6 +37,8 @@ export default function App() {
   const [VoteCount, setVoteCount] = React.useState();
   const [TotalOwnedVotes, setTotalOwnedVotes] = React.useState(0);
   const [ProposalNumber, setProposalNumber] = React.useState();
+  const [TokenAddress, setTokenAddress] = React.useState();
+  const [TokenId, setTokenId] = React.useState();
 
   const getAndSetProposal = async (prop) => {
     setProposalNumber(prop)
@@ -116,6 +118,9 @@ export default function App() {
           <button onClick={async (e) => { e.preventDefault(); proposeStakingContract({ DAOAddress, StakingContractName }) }}> Propose to associate with DAO</button>
         </form>
         Approve above proposal and make sure you have the nft mentioned above in your wallet.
+        <TextComponent name="TokenAddress" value={TokenAddress} label="Token Contract Address" callback={setTokenAddress} />
+        <TextComponent name="TokenId" value={TokenId} label="Token Id" callback={setTokenId} />
+        <button onClick={async (e) => { e.preventDefault(); await nftTransferCall({ StakingContractName, TokenAddress, TokenId }) }}> Transfer NFT and call Staking Contract </button>
         <form>
           <TextComponent name="CouncilName" value={CouncilName} label="New Council Name" callback={setCouncilName} />
           <button onClick={async (e) => { e.preventDefault(); await createTokenWeightCouncil({ DAOAddress, CouncilName }) }}>Create council using TokenWeight rather than UserWeight.</button>
