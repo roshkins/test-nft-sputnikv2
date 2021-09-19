@@ -102,6 +102,11 @@ export async function createTokenWeightCouncil({ DAOAddress, CouncilName }) {
     changeMethods: ['add_proposal'],
   })
   let policy = await daoContract.get_policy();
+  const tokenPolicy = {
+    weight_kind: "TokenWeight",
+    quorum: "0",
+    threshold: "1"
+  };
   policy.roles.push({
     "name": CouncilName,
     kind: { "Member": "1" },
@@ -109,13 +114,11 @@ export async function createTokenWeightCouncil({ DAOAddress, CouncilName }) {
       "*:VoteApprove",
       "*:VoteReject"],
     vote_policy: {
-      "*": {
-        weight_kind: "TokenWeight",
-        quorum: "0",
-        threshold: "1"
-      }
+      "*": tokenPolicy
     }
   })
+  policy.default_vote_policy = tokenPolicy;
+
   console.log("policy", policy);
   await daoContract.add_proposal({
     proposal: {
