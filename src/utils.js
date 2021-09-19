@@ -172,7 +172,7 @@ export async function nftTransferCall({ StakingContractName, TokenAddress, Token
   const args = {
     "receiver_id": stakingContractAddress,
     "token_id": TokenId,
-    "approval_id": "" + ApprovalId,
+    "approval_id": parseInt(ApprovalId),
     "memo": "",
     "msg": ""
   };
@@ -204,6 +204,36 @@ export async function approveNft({ TokenAddress, TokenId, StakingContractName })
   const stakingContractAddress = `${StakingContractName}.${STAKING_FACTORY}`;
 
   const args = { "token_id": TokenId, "account_id": stakingContractAddress };
-  await nftContract.nft_approve(args, 300000000000000, 1)
+  await nftContract.nft_approve(args, 300000000000000, utils.format.parseNearAmount("5"))
 
+}
+
+export async function getApprovalNumber({ StakingContractName, TokenAddress, TokenId }) {
+  if (TokenId.length < 1) return null;
+  const nftContract = new Contract(window.walletConnection.account(), TokenAddress, {
+    viewMethods: ['nft_token'],
+    changeMethods: ['']
+  })
+
+  const stakingContractAddress = `${StakingContractName}.${STAKING_FACTORY}`;
+
+  const args = { "token_id": TokenId };
+  console.log("Token Args", args);
+  const token = await nftContract.nft_token(args);
+  console.log("Token", token);
+  return token.approved_account_ids[stakingContractAddress] === undefined ? null : token.approved_account_ids[stakingContractAddress];
+}
+
+export async function delegateVotes({ StakingContractName, TokenId }) {
+  const stakingContractAddress = `${StakingContractName}.${STAKING_FACTORY}`;
+
+  const stakingContract = new Contract(window.walletConnection.account(), stakingContractAddress, {
+    // View methods are read only. They don't modify the state, but usually return some value.
+    viewMethods: [''],
+    // Change methods can modify the state. But you don't receive the returned value when called.
+    changeMethods: ['delegate'],
+  })
+
+  const args = { "account_id": window.walletConnection.getAccountId(), "token_id": TokenId, "amount": "1" }
+  stakingContract.delegate(args, 300000000000000, utils.format.parseNearAmount("0"))
 }

@@ -1,6 +1,6 @@
 import 'regenerator-runtime/runtime'
 import React from 'react'
-import { approveNft, login, logout, addNFT, createTokenWeightCouncil, vote, createVoteProposal, getProposal, connectToDao, proposeStakingContract, nftTransferCall, registerSender } from './utils'
+import { getApprovalNumber, approveNft, login, logout, addNFT, createTokenWeightCouncil, vote, createVoteProposal, getProposal, connectToDao, proposeStakingContract, nftTransferCall, registerSender, delegateVotes } from './utils'
 import './global.css'
 import TextComponent from './TextComponent'
 
@@ -39,18 +39,20 @@ export default function App() {
   const [TokenAddress, setTokenAddress] = useStickyState("", "TokenAddress");
   const [TokenId, setTokenId] = useStickyState("", "TokenId");
 
-  const [ApprovalId, setApprovalId] = useStickyState("", "ApprovalId");
 
+  const [ApprovalId, setApprovalId] = useStickyState("", "ApprovalId");
   const getAndSetProposal = async (prop) => {
     setProposalNumber(prop)
     setProposalStatus(JSON.stringify(await getProposal({ ProposalNumber: prop, DAOAddress })))
   }
+
   // The useEffect hook can be used to fire side-effects during render
   // Learn more: https://reactjs.org/docs/hooks-intro.html
   React.useEffect(
-    () => {
+    async () => {
       // in this case, we only care to query the contract when signed in
       if (window.walletConnection.isSignedIn()) {
+        setApprovalId("" + await getApprovalNumber({ StakingContractName, TokenAddress, TokenId }))
       }
     },
 
@@ -137,6 +139,7 @@ export default function App() {
         <form>
           <TextComponent name="ProposalNumber" label="Proposal Number to vote on" value={ProposalNumber} callback={getAndSetProposal} />
           Proposal: {ProposalStatus}
+          <button onClick={async (e) => { e.preventDefault(); await delegateVotes({ StakingContractName, TokenId }); }}>Delegate votes!</button>
           <button onClick={(e) => { e.preventDefault(); vote({ DAOAddress, VoteCount: +1, ProposalNumber }) }}>Vote YES using votes from staked NFT</button>
           <button onClick={(e) => { e.preventDefault(); vote({ DAOAddress, VoteCount: -1, ProposalNumber }) }}>Vote NO using votes from staked NFT</button>
         </form>
