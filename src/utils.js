@@ -18,8 +18,13 @@ export async function initContract() {
 
   // Getting the Account ID. If still unauthorized, it's just empty string
   window.accountId = window.walletConnection.getAccountId()
-  if (window.accountId)
-    window.keyId = (await keyStore.getKey(nearConfig.networkId, window.accountId)).getPublicKey().toString();
+  try {
+    if (window.accountId)
+      window.keyId = (await keyStore.getKey(nearConfig.networkId, window.accountId)).getPublicKey().toString();
+
+  } catch (error) {
+    console.error("ERROR:", error);
+  }
 
   window.stakingContractFactory = await new Contract(
     window.walletConnection.account(), StakingFactory,
