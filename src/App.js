@@ -131,6 +131,7 @@ export default function App() {
         <form>
           <TextComponent name="CouncilName" value={CouncilName} label="New Council Name" callback={setCouncilName} />
           <button onClick={async (e) => { e.preventDefault(); await createTokenWeightCouncil({ DAOAddress, CouncilName }) }}>Create council using TokenWeight rather than UserWeight.</button>
+          <button onClick={async (e) => { e.preventDefault(); await delegateVotes({ StakingContractName, TokenId }); }}>Delegate votes!</button>
         </form>
         <form>
           <TextComponent name="ProposalDescription" value={ProposalDescription} label="Proposal Description" callback={setProposalDescription} />
@@ -139,7 +140,6 @@ export default function App() {
         <form>
           <TextComponent name="ProposalNumber" label="Proposal Number to vote on" value={ProposalNumber} callback={getAndSetProposal} />
           Proposal: {ProposalStatus}
-          <button onClick={async (e) => { e.preventDefault(); await delegateVotes({ StakingContractName, TokenId }); }}>Delegate votes!</button>
           <button onClick={(e) => { e.preventDefault(); vote({ DAOAddress, VoteCount: +1, ProposalNumber }) }}>Vote YES using votes from staked NFT</button>
           <button onClick={(e) => { e.preventDefault(); vote({ DAOAddress, VoteCount: -1, ProposalNumber }) }}>Vote NO using votes from staked NFT</button>
         </form>
