@@ -29,7 +29,7 @@
     "nodemon": "~2.0.3",
     "parcel-bundler": "~1.12.4",
     "react-test-renderer": "~17.0.1",
-    "shelljs": "~0.8.4"
+    "shelljs": "~0.8.5"
   },
   "dependencies": {
     "near-api-js": "~0.41.0",
